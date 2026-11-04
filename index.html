@@ -627,6 +627,38 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <div class="container">
 
+<!-- Android Intent Lab: integrado al inicio sin reemplazar el core existente -->
+<section id="intent-lab" aria-labelledby="intent-lab-title" style="margin:0 5vw 24px;padding:18px;border:1px solid rgba(0,255,170,.25);border-radius:18px;background:rgba(25,30,55,.95);box-shadow:0 12px 32px rgba(0,0,0,.2);">
+    <div style="color:#00ffaa;font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;">Intent Lab · Android</div>
+    <h2 id="intent-lab-title" style="margin:6px 0;font-size:1.35rem;color:#fff;">Pruebas de enlaces intent://</h2>
+    <p style="color:#c9d3e5;margin:6px 0 14px;">Enlaces nativos para Chrome en Android. La página conserva el resto del sitio debajo y no abre intents mediante timers o redirecciones automáticas.</p>
+    <div id="intent-tests" style="display:grid;gap:10px;"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.12);">
+        <small id="intent-ua" style="color:#9db0ca;display:block;word-break:break-word;"></small>
+        <button id="intent-copy" type="button" style="margin-top:9px;border:1px solid rgba(255,255,255,.2);border-radius:9px;padding:9px 11px;background:#17243a;color:#fff;font:inherit;">Copiar último URI</button>
+        <code id="intent-events" style="display:block;white-space:pre-wrap;word-break:break-all;color:#c8d7ee;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;background:#09101e;border-radius:9px;padding:9px;margin-top:10px;">Sin eventos todavía.</code>
+    </div>
+</section>
+
+<script>
+(() => {
+    const fallback = encodeURIComponent(location.href.split('#')[0]);
+    const tests = [
+        {name:'Settings · acción directa', note:'URI corto con acción del sistema.', uri:`intent:#Intent;action=android.settings.SETTINGS;package=com.android.settings;S.browser_fallback_url=${fallback};end`},
+        {name:'Settings · host explícito', note:'Variante con host para comparar resolución.', uri:`intent://settings/#Intent;action=android.settings.SETTINGS;package=com.android.settings;S.browser_fallback_url=${fallback};end`},
+        {name:'Wi‑Fi · acción directa', note:'Permite separar la actividad concreta del mecanismo.', uri:`intent:#Intent;action=android.settings.WIFI_SETTINGS;package=com.android.settings;S.browser_fallback_url=${fallback};end`}
+    ];
+    const testsEl = document.getElementById('intent-tests');
+    const eventsEl = document.getElementById('intent-events');
+    let lastUri = '';
+    const write = (message) => { eventsEl.textContent = `[${new Date().toLocaleTimeString()}] ${message}\n` + eventsEl.textContent.replace('Sin eventos todavía.', ''); };
+    document.getElementById('intent-ua').textContent = `UA: ${navigator.userAgent}`;
+    testsEl.innerHTML = tests.map((test, index) => `<article style="padding:13px;border:1px solid rgba(255,255,255,.14);border-radius:13px;background:rgba(9,16,30,.55);"><strong style="color:#fff;">${test.name}</strong><small style="display:block;color:#9db0ca;margin-top:3px;">${test.note}</small><a data-intent-index="${index}" href="${test.uri}" style="display:inline-block;margin-top:10px;padding:10px 13px;border-radius:10px;background:#65a8ff;color:#07111f;text-decoration:none;font-weight:750;">Abrir intent</a><code style="display:block;white-space:pre-wrap;word-break:break-all;color:#c8d7ee;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;background:#09101e;border-radius:9px;padding:9px;margin-top:10px;">${test.uri}</code></article>`).join('');
+    testsEl.querySelectorAll('a[data-intent-index]').forEach((link) => link.addEventListener('click', () => { lastUri = link.getAttribute('href'); write(`Click nativo: ${lastUri}`); }));
+    document.getElementById('intent-copy').addEventListener('click', async () => { if (!lastUri) return write('No hay URI seleccionado.'); try { await navigator.clipboard.writeText(lastUri); write('URI copiado.'); } catch (_) { write('No se pudo copiar desde este contexto.'); } });
+})();
+</script>
+
 <header>
     <div class="logo-container">
         <div class="logo">🔓</div>
